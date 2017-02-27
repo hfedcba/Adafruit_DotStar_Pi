@@ -32,12 +32,15 @@ strip.setBrightness(255) # Limit brightness to ~1/4 duty cycle
 # Runs 10 LEDs at a time along strip, cycling through red, green and blue.
 # This requires about 200 mA for all the 'on' pixels + 1 mA per 'off' pixel.
 
-redBeg = 0x9D
-redEnd = 0x01
-greenBeg = 0xFF
-greenEnd = 0x80
-blueBeg = 0x00
-blueEnd = 0x2D
+colorStart = 0x9DFF00
+colorEnd = 0x00802D
+
+redBeg = colorStart >> 16
+redEnd = colorEnd >> 16
+greenBeg = (colorStart >> 8) & 0xFF
+greenEnd = (colorEnd >> 8) & 0xFF
+blueBeg = colorStart & 0xFF
+blueEnd = colorEnd & 0xFF
 stepwidthRed = (redEnd - redBeg)/numpixels
 stepwidthGreen = (greenEnd - greenBeg)/numpixels
 stepwidthBlue = (blueEnd - blueBeg)/numpixels
