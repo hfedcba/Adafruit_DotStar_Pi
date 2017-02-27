@@ -8,6 +8,7 @@
 # USB.  DON'T try that with other code!
 
 import time
+import random
 from dotstar import Adafruit_DotStar
 
 numpixels = 20 # Number of LEDs in strip
@@ -26,27 +27,37 @@ strip   = Adafruit_DotStar(numpixels, 32000000) # SPI @ ~32 MHz
 # Append "order='gbr'" to declaration for proper colors w/older DotStar strips)
 
 strip.begin()           # Initialize pins for output
-strip.setBrightness(255) # Limit brightness to ~1/4 duty cycle
+strip.setBrightness(255/8) # Limit brightness to ~1/4 duty cycle
 
 # Runs 10 LEDs at a time along strip, cycling through red, green and blue.
 # This requires about 200 mA for all the 'on' pixels + 1 mA per 'off' pixel.
 
 head  = 0               # Index of first 'on' pixel
 tail  = -10             # Index of last 'off' pixel
-color = 0xFF0000        # 'On' color (starts red)
-
-while True:                              # Loop forever
-
+redBeg = 0x9D
+redEnd = 0x01
+greenBeg = 0xFF
+greenEnd = 0x80
+blueBeg = 0x00
+blueEnd = 0x2D
+#colorStart = 0x00FF00        # 'On' color (starts red)
+stepwidthRed = (redEnd - redBeg)/numpixels
+stepwidthGreen = (greenEnd - greenBeg)/numpixels
+stepwidthBlue = (blueEnd - blueBeg)/numpixels
+#while True:                              # Loop forever
+for i in range(0, 20):
+	color = ((redBeg + head * stepwidthRed) << 16) | ((greenBeg + head * stepwidthGreen) << 8) | (blueBeg + head * stepwidthBlue)
 	strip.setPixelColor(head, color) # Turn on 'head' pixel
-	strip.setPixelColor(tail, 0)     # Turn off 'tail'
-	strip.show()                     # Refresh strip
-	time.sleep(1.0 / 50)             # Pause 20 milliseconds (~50 fps)
+#	strip.setPixelColor(tail, 0)     # Turn off 'tail'
+#	time.sleep(1.0 / 50)             # Pause 20 milliseconds (~50 fps)
 
 	head += 1                        # Advance head position
-	if(head >= numpixels):           # Off end of strip?
-		head    = 0              # Reset to start
-		color >>= 8              # Red->green->blue->black
-		if(color == 0): color = 0xFF0000 # If black, reset to red
+#	if(head >= numpixels):           # Off end of strip?
+#		head    = 0              # Reset to start
+#		color >>= 8              # Red->green->blue->black
+#		if(color == 0): color = 0xFF0000 # If black, reset to red
 
-	tail += 1                        # Advance tail position
-	if(tail >= numpixels): tail = 0  # Off end? Reset
+#	tail += 1                        # Advance tail position
+#	if(tail >= numpixels): tail = 0  # Off end? Reset
+strip.show()                     # Refresh strip
+
