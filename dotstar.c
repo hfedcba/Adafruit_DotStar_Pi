@@ -79,6 +79,8 @@ static volatile unsigned
 
 static uint8_t isPi2 = 0; // For clock pulse timing & stuff
 
+uint8_t ones[4] = { 0xFF, 0xFF, 0xFF, 0xFF };
+
 // SPI transfer operation setup.  These are only used w/hardware SPI
 // and LEDs at full brightness (or raw write); other conditions require
 // per-byte processing.  Explained further in the show() method.
@@ -131,7 +133,7 @@ static PyObject *DotStar_new(
 	uint32_t       n_pixels = 0, bitrate = 8000000, i;
 	PyObject      *string;
 	char          *order    = NULL, *c;
-	uint8_t        rOffset = 2, gOffset = 3, bOffset = 1; // BRG default
+	uint8_t        rOffset = 3, gOffset = 2, bOffset = 1; // BRG default
 
 	switch(PyTuple_Size(arg)) {
 	   case 3: // Pixel count, data pin, clock pin
@@ -399,8 +401,15 @@ static void raw_write(DotStarObject *self, uint8_t *ptr, uint32_t len) {
 		xfer[2].speed_hz = self->bitrate;
 		xfer[1].tx_buf   = (unsigned long)ptr;
 		xfer[1].len      = len;
-		if(self->numLEDs) xfer[2].len = (self->numLEDs + 15) / 16;
-		else              xfer[2].len = ((len / 4) + 15) / 16;
+
+		// Original code
+		/*if(self->numLEDs) xfer[2].len = (self->numLEDs + 15) / 16;
+		else              xfer[2].len = ((len / 4) + 15) / 16;*/
+
+		// But according to datasheet we need to send 32 1s
+		xfer[2].tx_buf	= (unsigned long)ones;
+		xfer[2].len	= 4;
+
 		// All that spi_ioc_transfer struct stuff earlier in
 		// the code is so we can use this single ioctl to concat
 		// the data & footer into one operation:
