@@ -32,8 +32,10 @@ strip.setBrightness(255) # Limit brightness to ~1/4 duty cycle
 # Runs 10 LEDs at a time along strip, cycling through red, green and blue.
 # This requires about 200 mA for all the 'on' pixels + 1 mA per 'off' pixel.
 
+#colorStart = 0x9DFF00
+#colorEnd = 0x00802D
 colorStart = 0x9DFF00
-colorEnd = 0x00802D
+colorEnd = 0xFF0000
 
 redBeg = colorStart >> 16
 redEnd = colorEnd >> 16
@@ -46,17 +48,38 @@ stepwidthGreen = (greenEnd - greenBeg)/numpixels
 stepwidthBlue = (blueEnd - blueBeg)/numpixels
 list = []
 
+colorList = []
 for i in range(0, numpixels):
 	list.append(i)
 	strip.setPixelColor(i, 0)
+	color = ((redBeg + i * stepwidthRed) << 16) | ((greenBeg + i * stepwidthGreen) << 8) | (blueBeg + i * stepwidthBlue)
+	colorList.append(color)
 
 strip.show()
 
 random.shuffle(list)
 
 for i in list:
-	color = ((redBeg + i * stepwidthRed) << 16) | ((greenBeg + i * stepwidthGreen) << 8) | (blueBeg + i * stepwidthBlue)
-	strip.setPixelColor(i, color) # Turn on 'head' pixel
+	strip.setPixelColor(i, colorList[i]) # Turn on 'head' pixel
 	strip.show()                     # Refresh strip
 	time.sleep(1.0 / 10)             # Pause 20 milliseconds (~50 fps)
 
+lastPos = 0
+pos = 0
+reverse = False
+while True:
+	strip.setPixelColor(lastPos, colorList[lastPos])
+	strip.setPixelColor(pos, 0x0000FF)
+	strip.show()
+	lastPos = pos
+	time.sleep(1.0 / 50)             # Pause 20 milliseconds (~50 fps)
+	if reverse:
+		pos -= 1
+	else:
+		pos += 1
+	if pos > 19:
+		reverse = True
+		pos = 19
+	elif pos < 0:
+		reverse = False
+		pos = 0
